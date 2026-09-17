@@ -1,13 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>My Products List</title>
-</head>
-<body>
+@extends('layouts.app')
+
+@section('title', 'My Products List')
+
+@section('content')
     <h1>My Products List</h1>
-    <p>Prepared by: James Franco A. Gonzales</p>
  
-    <table border="1" cellpadding="8">
+    <table class="table table-striped table-hover">
         <tr>
             <th>Name</th>
             <th>Price</th>
@@ -22,5 +20,4 @@
             </tr>
         @endforeach
     </table>
-</body>
-</html>
+@endsection
