@@ -9,9 +9,30 @@ class MoviesController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('movies.index', ['movies' => $this->movies()]);
+        $genre = $request->query('genre', '');
+        $year = $request->query('year', '');
+        $allMovies = $this->movies();
+
+        $movies = array_filter(
+            $allMovies,
+            fn (array $movie): bool => ($genre === '' || $movie['genre'] === $genre)
+                && ($year === '' || (string) $movie['year'] === (string) $year)
+        );
+
+        $genres = array_values(array_unique(array_column($allMovies, 'genre')));
+        $years = array_values(array_unique(array_column($allMovies, 'year')));
+        sort($genres);
+        sort($years);
+
+        return view('movies.index', [
+            'movies' => $movies,
+            'genres' => $genres,
+            'years' => $years,
+            'genre' => $genre,
+            'year' => $year,
+        ]);
     }
 
     /**
@@ -66,20 +87,6 @@ class MoviesController extends Controller
     public function destroy(string $id)
     {
         //
-    }
-
-    public function filter(?int $year = null)
-    {
-        $year ??= 1994;
-
-        $movies = array_filter(
-            $this->movies(),
-            fn (array $movie): bool => $movie['year'] === $year
-        );
-
-        abort_if($movies === [], 404);
-
-        return view('movies.filter', ['movies' => $movies, 'year' => $year]);
     }
 
     private function movies(): array
