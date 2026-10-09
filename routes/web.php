@@ -14,4 +14,4 @@ Route::get('/', function () {
 Route::get('/movies/filter/{year?}', function (?string $year = null) {
     return redirect()->route('movies.index', $year === null ? [] : ['year' => $year]);
 })->name('movies.filter');
-Route::resource('movies', MoviesController::class)->only(['index', 'show']);
+Route::resource('movies', MoviesController::class)->only(['index', 'create', 'store', 'show']);

@@ -4,6 +4,7 @@
 
 @section('content')
     <h1 class="mb-2">My Movies List</h1>
+    <a class="btn btn-primary mb-3" href="{{ route('movies.create') }}">Add movie</a>
 
     <section class="mb-4" aria-label="Movie filters">
         <p class="mb-1"><strong>Active filters:</strong>
@@ -43,22 +44,24 @@
             <th>Title</th>
             <th>Year</th>
             <th>Era</th>
+            <th>Availability</th>
         </tr>
 
         @forelse ($movies as $movie)
             <tr>
                 <td>{{ $loop->iteration }}</td>
-                <td>{{ $movie['title'] }}</td>
+                <td><a href="{{ route('movies.show', $movie['id']) }}">{{ $movie['title'] }}</a></td>
                 <td>{{ $movie['year'] }}</td>
                 @if ($movie['year'] >= 2000)
                     <td>Modern release</td>
                 @else
                     <td>Classic</td>
                 @endif
+                <td>{{ $movie['is_available'] ? 'Yes' : 'No' }}</td>
             </tr>
         @empty
             <tr>
-                <td colspan="4">There are no movies to display right now.</td>
+                <td colspan="5">There are no movies to display right now.</td>
             </tr>
         @endforelse
     </table>

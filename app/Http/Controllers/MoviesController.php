@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class MoviesController extends Controller
 {
@@ -40,7 +41,10 @@ class MoviesController extends Controller
      */
     public function create()
     {
-        //
+        $genres = array_values(array_unique(array_column($this->movies(), 'genre')));
+        sort($genres);
+
+        return view('movies.create', ['genres' => $genres]);
     }
 
     /**
@@ -48,7 +52,28 @@ class MoviesController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $movies = $this->movies();
+        $validated = $request->validate([
+            'id' => ['required', 'integer', 'min:1', Rule::notIn(array_keys($movies))],
+            'title' => ['required', 'string', 'max:255'],
+            'year' => ['required', 'integer', 'min:1888', 'max:9999'],
+            'genre' => ['required', 'string', 'max:100', Rule::in(array_unique(array_column($movies, 'genre')))],
+            'is_available' => ['required', 'boolean'],
+        ]);
+
+        $id = (int) $validated['id'];
+        $movies[$id] = [
+            'id' => $id,
+            'title' => $validated['title'],
+            'year' => (int) $validated['year'],
+            'genre' => $validated['genre'],
+            'is_available' => $validated['is_available'] === '1' || $validated['is_available'] === true,
+        ];
+        ksort($movies);
+        $this->saveMovies($movies);
+
+        return redirect()->route('movies.show', $id)
+            ->with('success', 'Movie added successfully.');
     }
 
     /**
@@ -91,13 +116,28 @@ class MoviesController extends Controller
 
     private function movies(): array
     {
-        return [
-            1 => ['id' => 1, 'title' => 'The Shawshank Redemption', 'year' => 1994, 'genre' => 'Drama'],
-            2 => ['id' => 2, 'title' => 'The Godfather', 'year' => 1972, 'genre' => 'Crime'],
-            3 => ['id' => 3, 'title' => 'The Dark Knight', 'year' => 2008, 'genre' => 'Action'],
-            4 => ['id' => 4, 'title' => 'Pulp Fiction', 'year' => 1994, 'genre' => 'Crime'],
-            5 => ['id' => 5, 'title' => 'Forrest Gump', 'year' => 1994, 'genre' => 'Drama'],
-            6 => ['id' => 6, 'title' => 'Inception', 'year' => 2010, 'genre' => 'Action'],
-        ];
+        $json = file_get_contents(storage_path('app/movies.json'));
+
+        if ($json === false) {
+            throw new \RuntimeException('Unable to read movie data from storage/app/movies.json.');
+        }
+
+        $movies = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+
+        if (! is_array($movies)) {
+            throw new \UnexpectedValueException('Movie data must be a JSON object.');
+        }
+
+        return $movies;
+    }
+
+    private function saveMovies(array $movies): void
+    {
+        $json = json_encode($movies, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . PHP_EOL;
+        $written = file_put_contents(storage_path('app/movies.json'), $json, LOCK_EX);
+
+        if ($written === false) {
+            throw new \RuntimeException('Unable to write movie data to storage/app/movies.json.');
+        }
     }
 }

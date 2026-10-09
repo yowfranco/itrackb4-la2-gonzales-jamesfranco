@@ -11,6 +11,7 @@
             <p><strong>Title:</strong> {{ $movie['title'] }}</p>
             <p><strong>Year:</strong> {{ $movie['year'] }}</p>
             <p><strong>Genre:</strong> {{ $movie['genre'] }}</p>
+            <p><strong>Availability:</strong> {{ $movie['is_available'] ? 'Yes' : 'No' }}</p>
 
             <a class="btn btn-outline-primary" href="{{ route('movies.index') }}">Back to movies</a>
         </div>

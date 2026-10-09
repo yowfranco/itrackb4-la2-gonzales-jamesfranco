@@ -13,6 +13,10 @@
         <p class="text-secondary mb-0">Prepared by: James Franco A. Gonzales</p>
 
         <main class="mt-4">
+            @if (session('success'))
+                <div class="alert alert-success" role="status">{{ session('success') }}</div>
+            @endif
+
             @yield('content')
         </main>
     </div>
